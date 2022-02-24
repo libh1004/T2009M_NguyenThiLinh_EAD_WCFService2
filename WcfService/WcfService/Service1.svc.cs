@@ -5,29 +5,34 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
+using WcfService.Data;
+using WcfService.Entity;
 
 namespace WcfService
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in code, svc and config file together.
-    // NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
-    public class Service1 : IService1
+    public class Service : IService
     {
-        public string GetData(int value)
+        public MyDbContext db = new MyDbContext();
+        public Employee Save(Employee employee)
         {
-            return string.Format("You entered: {0}", value);
+            db.Employees.Add(employee);
+            db.SaveChanges();
+            return employee;
         }
-
-        public CompositeType GetDataUsingDataContract(CompositeType composite)
+        public List<Employee> SearchEmployee(string keyword)
         {
-            if (composite == null)
+            if (keyword != null)
             {
-                throw new ArgumentNullException("composite");
+                var employee = from em in db.Employees
+                         .Where(e => e.Department.Equals(keyword))
+                               select em;
+                return employee.ToList();
             }
-            if (composite.BoolValue)
+            else
             {
-                composite.StringValue += "Suffix";
+                return db.Employees.ToList();
             }
-            return composite;
+
         }
     }
 }
